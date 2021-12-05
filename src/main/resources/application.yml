@@ -13,8 +13,8 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
-#      driver-class-name: com.mysql.cj.jdbc.Driver
-      driver-class-name: com.mysql.jdbc.Driver
+      driver-class-name: com.mysql.cj.jdbc.Driver
+#      driver-class-name: com.mysql.jdbc.Driver
       url: jdbc:mysql://localhost:3306/emos?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
       username: root
       password: 123456789
@@ -65,11 +65,12 @@ logging:
   pattern:
     console: "%d{HH:mm:ss}  %-5level  %msg%n"
 
-#emos:
-#  jwt:
-#    secret: abc123456
-#    expire: 5
-#    cache-expire: 10
+
+emos:
+  jwt:
+    secret: 123456789
+    expire: 5
+    cache-expire: 10
 #  face:
 #    createFaceModelUrl: http://CentOS的IP地址:3000/create_face_model
 #    checkinUrl: http://CentOS的IP地址:3000/checkin
@@ -86,6 +87,6 @@ logging:
 #  appid: TRTC的APPID
 #  key: TRTC的密钥
 #  expire: 86400
-#wx:
-#  app-id: 微信小程序APPID
-#  app-secret: 微信小程序密钥
+wx:
+  app-id: 微信小程序APPID
+  app-secret: 微信小程序密钥
