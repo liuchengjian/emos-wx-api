@@ -4,6 +4,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.liucj.emos.wx.db.dao.TbUserDao;
+import com.liucj.emos.wx.db.pojo.TbUser;
 import com.liucj.emos.wx.exception.EmosException;
 import com.liucj.emos.wx.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,18 +29,17 @@ public class UserServiceImpl implements UserService {
     private TbUserDao userDao;
 
 
-
-    private String getOpenId(String code){
-        String url="https://api.weixin.qq.com/sns/jscode2session";
-        HashMap map=new HashMap();
+    private String getOpenId(String code) {
+        String url = "https://api.weixin.qq.com/sns/jscode2session";
+        HashMap map = new HashMap();
         map.put("appid", appId);
         map.put("secret", appSecret);
         map.put("js_code", code);
         map.put("grant_type", "authorization_code");
-        String response=HttpUtil.post(url,map);
-        JSONObject json=JSONUtil.parseObj(response);
-        String openId=json.getStr("openid");
-        if(openId==null||openId.length()==0){
+        String response = HttpUtil.post(url, map);
+        JSONObject json = JSONUtil.parseObj(response);
+        String openId = json.getStr("openid");
+        if (openId == null || openId.length() == 0) {
             throw new RuntimeException("临时登陆凭证错误");
         }
         return openId;
@@ -47,11 +47,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int registerUser(String registerCode, String code, String nickname, String photo) {
-        if(registerCode.equals("000000")){
-            boolean bool=userDao.haveRootUser();
-            if(!bool){
-                String openId=getOpenId(code);
-                HashMap param=new HashMap();
+        if (registerCode.equals("000000")) {
+            boolean bool = userDao.haveRootUser();
+            if (!bool) {
+                String openId = getOpenId(code);
+                HashMap param = new HashMap();
                 param.put("openId", openId);
                 param.put("nickname", nickname);
                 param.put("photo", photo);
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
                 param.put("createTime", new Date());
                 param.put("root", true);
                 userDao.insert(param);
-                int id=userDao.searchIdByOpenId(openId);
+                int id = userDao.searchIdByOpenId(openId);
 
 //                MessageEntity entity=new MessageEntity();
 //                entity.setSenderId(0);
@@ -70,12 +70,11 @@ public class UserServiceImpl implements UserService {
 //                entity.setSendTime(new Date());
 //                messageTask.sendAsync(id+"",entity);
                 return id;
+            } else {
+                return -1;
+//                throw new EmosException("无法绑定超级管理员账号");
             }
-            else{
-                throw new EmosException("无法绑定超级管理员账号");
-            }
-        }
-        else{
+        } else {
 
         }
         return 0;
@@ -83,10 +82,42 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Set<String> searchUserPermissions(int userId) {
-        Set<String> permissions=userDao.searchUserPermissions(userId);
+        Set<String> permissions = userDao.searchUserPermissions(userId);
         return permissions;
     }
 
+    @Override
+    public Integer login(String code) {
+        String openId = getOpenId(code);
+        Integer id = userDao.searchIdByOpenId(openId);
+        if (id == null) {
+            id = -1;
+        }
+        return id;
+    }
+
+    /**
+     * 查询用户
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public TbUser searchById(int userId) {
+        TbUser user = userDao.searchById(userId);
+        return user;
+    }
+
+    /**
+     * 查询用户入职日期
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public String searchUserHiredate(int userId) {
+        return userDao.searchUserHiredate(userId);
+    }
 
 
 }
