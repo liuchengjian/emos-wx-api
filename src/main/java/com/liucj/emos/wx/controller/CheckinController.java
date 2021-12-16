@@ -7,6 +7,7 @@ import com.liucj.emos.wx.common.util.R;
 import com.liucj.emos.wx.config.SystemConstants;
 import com.liucj.emos.wx.config.shiro.JwtUtil;
 import com.liucj.emos.wx.controller.form.CheckinForm;
+import com.liucj.emos.wx.controller.form.SearchMonthCheckinForm;
 import com.liucj.emos.wx.exception.EmosException;
 import com.liucj.emos.wx.service.CheckinService;
 import com.liucj.emos.wx.service.UserService;
@@ -147,12 +148,54 @@ public class CheckinController {
         }
         DateTime endDate = DateUtil.endOfWeek(DateUtil.date());
         HashMap param = new HashMap();
-        param.put("startDate",startDate.toString());
-        param.put("endDate",endDate.toString());
-        param.put("userId",userId);
+        param.put("startDate", startDate.toString());
+        param.put("endDate", endDate.toString());
+        param.put("userId", userId);
         ArrayList<HashMap> list = checkinService.searchWeekCheckin(param);
         map.put("weekCheckin", list);
         return R.ok().put("result", map);
+    }
+
+    @PostMapping("/searchMonthCheckin")
+    @ApiOperation("查询用户本月签到数据")
+    public R searchMonthCheckin(@Valid @RequestBody SearchMonthCheckinForm form, @RequestHeader("token") String token) {
+        int userId = jwtUtil.getUserId(token);
+        //入职日期
+        DateTime hiredate = DateUtil.parse(userService.searchUserHiredate(userId));
+        String month = form.getMonth() < 10 ? "0" + form.getMonth() : form.getMonth().toString();
+        DateTime startDate = DateUtil.parse(form.getYear() + "-" + month + "-01");
+        if (startDate.isBefore(DateUtil.beginOfMonth(hiredate))) {
+            //查询月份比入职日期早
+            throw new EmosException("只能查询考勤之后的日期的数据");
+        }
+        //查询日期>=入职日期的日期
+        if (startDate.isBefore(hiredate)) {
+            //查询日期月份和入职月份一样
+            startDate = hiredate;
+        }
+        DateTime endDate = DateUtil.endOfMonth(startDate);
+        HashMap param = new HashMap();
+        param.put("userId", userId);
+        param.put("startDate", startDate.toString());
+        param.put("endDate", endDate.toString());
+        ArrayList<HashMap> list = checkinService.searchMonthCheckin(param);
+        int sum_1 = 0;
+        int sum_2 = 0;
+        int sum_3 = 0;
+        for (HashMap<String, String> one : list) {
+            String type = one.get("type");
+            String status = one.get("status");
+            if ("工作日".equals(type)) {
+                if ("正常".equals(status)) {
+                    sum_1++;
+                } else if ("迟到".equals(status)) {
+                    sum_2++;
+                } else if ("缺勤".equals(status)) {
+                    sum_3++;
+                }
+            }
+        }
+        return R.ok().put("list", list).put("sum_1", sum_1).put("sum_2", sum_2).put("sum_3", sum_3);
     }
 
 

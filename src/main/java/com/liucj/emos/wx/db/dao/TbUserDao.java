@@ -24,4 +24,6 @@ public interface TbUserDao {
     public HashMap searchNameAndDept(int userId);
     //查询某个用户入职时间
     public String searchUserHiredate(int userId);
+    //查询用户摘要信息
+    public HashMap searchUserSummary(int userId);
 }

@@ -3,6 +3,7 @@ package com.liucj.emos.wx.service;
 import com.liucj.emos.wx.db.pojo.TbUser;
 import org.apache.shiro.crypto.hash.Hash;
 
+import java.util.HashMap;
 import java.util.Set;
 
 public interface UserService {
@@ -16,5 +17,6 @@ public interface UserService {
     public TbUser searchById(int userId);
     //查询用户入职日期
     public String searchUserHiredate(int userId);
-
+    //查询用户摘要信息
+    public HashMap searchUserSummary(int userId);
 }

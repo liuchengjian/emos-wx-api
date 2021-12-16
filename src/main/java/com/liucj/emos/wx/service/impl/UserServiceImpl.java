@@ -1,12 +1,15 @@
 package com.liucj.emos.wx.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.liucj.emos.wx.db.dao.TbUserDao;
+import com.liucj.emos.wx.db.pojo.MessageEntity;
 import com.liucj.emos.wx.db.pojo.TbUser;
 import com.liucj.emos.wx.exception.EmosException;
 import com.liucj.emos.wx.service.UserService;
+import com.liucj.emos.wx.task.MessageTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +30,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private TbUserDao userDao;
+
+    @Autowired
+    private MessageTask messageTask;
 
 
     private String getOpenId(String code) {
@@ -61,14 +67,14 @@ public class UserServiceImpl implements UserService {
                 param.put("root", true);
                 userDao.insert(param);
                 int id = userDao.searchIdByOpenId(openId);
-
-//                MessageEntity entity=new MessageEntity();
-//                entity.setSenderId(0);
-//                entity.setSenderName("系统消息");
-//                entity.setUuid(IdUtil.simpleUUID());
-//                entity.setMsg("欢迎您注册成为超级管理员，请及时更新你的员工个人信息。");
-//                entity.setSendTime(new Date());
-//                messageTask.sendAsync(id+"",entity);
+                //发送系统消息
+                MessageEntity entity = new MessageEntity();
+                entity.setSenderId(0);
+                entity.setSenderName("系统消息");
+                entity.setUuid(IdUtil.simpleUUID());
+                entity.setMsg("欢迎您注册成为超级管理员，请及时更新你的员工个人信息。");
+                entity.setSendTime(new Date());
+                messageTask.sendAsync(id + "", entity);
                 return id;
             } else {
                 return -1;
@@ -93,6 +99,7 @@ public class UserServiceImpl implements UserService {
         if (id == null) {
             id = -1;
         }
+        messageTask.receiveAsync(id + "");
         return id;
     }
 
@@ -117,6 +124,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public String searchUserHiredate(int userId) {
         return userDao.searchUserHiredate(userId);
+    }
+
+
+    @Override
+    public HashMap searchUserSummary(int userId) {
+        return userDao.searchUserSummary(userId);
     }
 
 

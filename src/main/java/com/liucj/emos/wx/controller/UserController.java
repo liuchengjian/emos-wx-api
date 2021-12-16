@@ -5,6 +5,7 @@ import com.liucj.emos.wx.common.util.R;
 import com.liucj.emos.wx.config.shiro.JwtUtil;
 import com.liucj.emos.wx.controller.form.LoginForm;
 import com.liucj.emos.wx.controller.form.RegisterForm;
+import com.liucj.emos.wx.db.pojo.MessageEntity;
 import com.liucj.emos.wx.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -59,6 +60,12 @@ public class UserController {
         return R.ok("登录成功").put("token", token).put("permission", permsSet);
     }
 
+    @GetMapping("/searchUserSummary")
+    @ApiOperation("查询用户摘要信息")
+    public R searchUserSummary(@RequestHeader("token") String token) {
+        int userId = jwtUtil.getUserId(token);
+        return R.ok().put("result",userService.searchUserSummary(userId));
+    }
 
     private void saveCacheToken(String token, int userId) {
         redisTemplate.opsForValue().set(token, userId + "", cacheExpire, TimeUnit.DAYS);

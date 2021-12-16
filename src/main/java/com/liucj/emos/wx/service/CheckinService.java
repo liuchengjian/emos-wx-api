@@ -19,4 +19,6 @@ public interface CheckinService {
     public long searchCheckinDays(int userId);
     //查询本周签到天数
     public ArrayList<HashMap> searchWeekCheckin(HashMap param);
+    //查询本月签到天数
+    public ArrayList<HashMap> searchMonthCheckin(HashMap param);
 }
